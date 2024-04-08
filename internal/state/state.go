@@ -10,9 +10,13 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-type Pair[T any] struct {
+type Pair[T comparable] struct {
 	Timestamp time.Time
 	Value     T
+}
+
+func (p Pair[T]) Equal(p2 Pair[T]) bool {
+	return p.Value == p2.Value && p.Timestamp.Equal(p2.Timestamp)
 }
 
 type Floats map[rawv2.MAC]Pair[float32]
