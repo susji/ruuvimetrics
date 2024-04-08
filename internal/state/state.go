@@ -39,38 +39,45 @@ type State struct {
 	m     *sync.RWMutex
 }
 
+func setifnewer[T comparable](target map[rawv2.MAC]Pair[T], mac rawv2.MAC, cand Pair[T]) {
+	p, ok := target[mac]
+	if !ok || p.Timestamp.Before(cand.Timestamp) {
+		target[mac] = cand
+	}
+}
+
 func (s *State) Update(d *rawv2.RuuviRawV2) {
 	s.m.Lock()
 	defer s.m.Unlock()
 	if d.Temperature.Valid {
-		s.temp[d.MAC] = Pair[float32]{Timestamp: d.Timestamp, Value: d.Temperature.Value}
+		setifnewer(s.temp, d.MAC, Pair[float32]{Timestamp: d.Timestamp, Value: d.Temperature.Value})
 	}
 	if d.BatteryVoltage.Valid {
-		s.volt[d.MAC] = Pair[float32]{Timestamp: d.Timestamp, Value: d.BatteryVoltage.Value}
+		setifnewer(s.volt, d.MAC, Pair[float32]{Timestamp: d.Timestamp, Value: d.BatteryVoltage.Value})
 	}
 	if d.Humidity.Valid {
-		s.humid[d.MAC] = Pair[float32]{Timestamp: d.Timestamp, Value: d.Humidity.Value}
+		setifnewer(s.humid, d.MAC, Pair[float32]{Timestamp: d.Timestamp, Value: d.Humidity.Value})
 	}
 	if d.Pressure.Valid {
-		s.pres[d.MAC] = Pair[uint32]{Timestamp: d.Timestamp, Value: d.Pressure.Value}
+		setifnewer(s.pres, d.MAC, Pair[uint32]{Timestamp: d.Timestamp, Value: d.Pressure.Value})
 	}
 	if d.AccelerationX.Valid {
-		s.accx[d.MAC] = Pair[int16]{Timestamp: d.Timestamp, Value: d.AccelerationX.Value}
+		setifnewer(s.accx, d.MAC, Pair[int16]{Timestamp: d.Timestamp, Value: d.AccelerationX.Value})
 	}
 	if d.AccelerationY.Valid {
-		s.accy[d.MAC] = Pair[int16]{Timestamp: d.Timestamp, Value: d.AccelerationY.Value}
+		setifnewer(s.accy, d.MAC, Pair[int16]{Timestamp: d.Timestamp, Value: d.AccelerationY.Value})
 	}
 	if d.AccelerationZ.Valid {
-		s.accz[d.MAC] = Pair[int16]{Timestamp: d.Timestamp, Value: d.AccelerationZ.Value}
+		setifnewer(s.accz, d.MAC, Pair[int16]{Timestamp: d.Timestamp, Value: d.AccelerationZ.Value})
 	}
 	if d.TransmitPower.Valid {
-		s.txpwr[d.MAC] = Pair[int16]{Timestamp: d.Timestamp, Value: d.TransmitPower.Value}
+		setifnewer(s.txpwr, d.MAC, Pair[int16]{Timestamp: d.Timestamp, Value: d.TransmitPower.Value})
 	}
 	if d.MovementCounter.Valid {
-		s.mov[d.MAC] = Pair[uint8]{Timestamp: d.Timestamp, Value: d.MovementCounter.Value}
+		setifnewer(s.mov, d.MAC, Pair[uint8]{Timestamp: d.Timestamp, Value: d.MovementCounter.Value})
 	}
 	if d.SequenceNumber.Valid {
-		s.seq[d.MAC] = Pair[uint16]{Timestamp: d.Timestamp, Value: d.SequenceNumber.Value}
+		setifnewer(s.seq, d.MAC, Pair[uint16]{Timestamp: d.Timestamp, Value: d.SequenceNumber.Value})
 	}
 }
 
