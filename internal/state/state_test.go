@@ -2,17 +2,12 @@ package state_test
 
 import (
 	"maps"
-	"math"
 	"testing"
 	"time"
 
 	"github.com/susji/ruuvi/data/rawv2"
 	"github.com/susji/ruuvimetrics/internal/state"
 )
-
-func almostf(f1, f2 float32) bool {
-	return math.Abs(float64(f1-f2)) < 0.001
-}
 
 func TestEmptyStateGetting(t *testing.T) {
 	s := state.New()
@@ -142,15 +137,15 @@ func TestUpdateWithOlder(t *testing.T) {
 		},
 	})
 	temp := s.Temperatures()
-	if got, _ := temp[mac]; !almostf(got.Value, 321) {
+	if got, _ := temp[mac]; got.Value != 321 {
 		t.Error(got.Value)
 	}
 	volt := s.Voltages()
-	if got, _ := volt[mac]; !almostf(got.Value, 2.0) {
+	if got, _ := volt[mac]; got.Value != 2.0 {
 		t.Error(got.Value)
 	}
 	hum := s.Humidities()
-	if got, _ := hum[mac]; !almostf(got.Value, 25) {
+	if got, _ := hum[mac]; got.Value != 25 {
 		t.Error(got.Value)
 	}
 	pres := s.Pressures()
@@ -217,15 +212,15 @@ func TestUpdateInvalidAndMissing(t *testing.T) {
 		},
 	})
 	temp := s.Temperatures()
-	if got, _ := temp[mac]; !almostf(got.Value, 642) {
+	if got, _ := temp[mac]; got.Value != 642 {
 		t.Error(got.Value)
 	}
 	volt := s.Voltages()
-	if got, _ := volt[mac]; !almostf(got.Value, 2.0) {
+	if got, _ := volt[mac]; got.Value != 2.0 {
 		t.Error(got.Value)
 	}
 	hum := s.Humidities()
-	if got, _ := hum[mac]; !almostf(got.Value, 15) {
+	if got, _ := hum[mac]; got.Value != 15 {
 		t.Error(got.Value)
 	}
 }
