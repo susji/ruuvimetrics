@@ -182,3 +182,50 @@ func TestUpdateWithOlder(t *testing.T) {
 		t.Error(got.Value)
 	}
 }
+
+func TestUpdateInvalidAndMissing(t *testing.T) {
+	s := state.New()
+	now := time.Now()
+	newer := now.Add(1 * time.Hour)
+	mac := rawv2.MAC{Value: [6]byte([]byte("123456"))}
+	s.Update(&rawv2.RuuviRawV2{
+		Timestamp: now,
+		MAC:       mac,
+		Temperature: rawv2.Temperature{
+			Valid: true,
+			Value: 321,
+		},
+		BatteryVoltage: rawv2.BatteryVoltage{
+			Valid: true,
+			Value: 2.0,
+		},
+	})
+	s.Update(&rawv2.RuuviRawV2{
+		Timestamp: newer,
+		MAC:       mac,
+		Temperature: rawv2.Temperature{
+			Valid: true,
+			Value: 642,
+		},
+		BatteryVoltage: rawv2.BatteryVoltage{
+			Valid: false,
+			Value: 1.8,
+		},
+		Humidity: rawv2.Humidity{
+			Valid: true,
+			Value: 15,
+		},
+	})
+	temp := s.Temperatures()
+	if got, _ := temp[mac]; !almostf(got.Value, 642) {
+		t.Error(got.Value)
+	}
+	volt := s.Voltages()
+	if got, _ := volt[mac]; !almostf(got.Value, 2.0) {
+		t.Error(got.Value)
+	}
+	hum := s.Humidities()
+	if got, _ := hum[mac]; !almostf(got.Value, 15) {
+		t.Error(got.Value)
+	}
+}
