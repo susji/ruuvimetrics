@@ -7,6 +7,7 @@ import (
 
 	"github.com/susji/ruuvi/data/rawv2"
 	"github.com/susji/ruuvimetrics/internal/state"
+	"github.com/susji/ruuvimetrics/internal/testhelpers"
 )
 
 func TestEmptyStateGetting(t *testing.T) {
@@ -48,94 +49,8 @@ func TestUpdateWithOlder(t *testing.T) {
 	now := time.Now()
 	past := now.Add(-1 * time.Hour)
 	mac := rawv2.MAC{Value: [6]byte([]byte("123456"))}
-	dnow := &rawv2.RuuviRawV2{
-		Timestamp: now,
-		MAC:       mac,
-		Temperature: rawv2.Temperature{
-			Valid: true,
-			Value: 321,
-		},
-		BatteryVoltage: rawv2.BatteryVoltage{
-			Valid: true,
-			Value: 2.0,
-		},
-		Humidity: rawv2.Humidity{
-			Valid: true,
-			Value: 25,
-		},
-		Pressure: rawv2.Pressure{
-			Valid: true,
-			Value: 75000,
-		},
-		AccelerationX: rawv2.Acceleration{
-			Valid: true,
-			Value: 10,
-		},
-		AccelerationY: rawv2.Acceleration{
-			Valid: true,
-			Value: 20,
-		},
-		AccelerationZ: rawv2.Acceleration{
-			Valid: true,
-			Value: 30,
-		},
-		TransmitPower: rawv2.TransmitPower{
-			Valid: true,
-			Value: 10,
-		},
-		MovementCounter: rawv2.MovementCounter{
-			Valid: true,
-			Value: 100,
-		},
-		SequenceNumber: rawv2.SequenceNumber{
-			Valid: true,
-			Value: 10000,
-		},
-	}
-	dpast := &rawv2.RuuviRawV2{
-		Timestamp: past,
-		MAC:       mac,
-		Temperature: rawv2.Temperature{
-			Valid: true,
-			Value: 642,
-		},
-		BatteryVoltage: rawv2.BatteryVoltage{
-			Valid: true,
-			Value: 2.2,
-		},
-		Humidity: rawv2.Humidity{
-			Valid: true,
-			Value: 15,
-		},
-		Pressure: rawv2.Pressure{
-			Valid: true,
-			Value: 85000,
-		},
-		AccelerationX: rawv2.Acceleration{
-			Valid: true,
-			Value: 15,
-		},
-		AccelerationY: rawv2.Acceleration{
-			Valid: true,
-			Value: 25,
-		},
-		AccelerationZ: rawv2.Acceleration{
-			Valid: true,
-			Value: 35,
-		},
-		TransmitPower: rawv2.TransmitPower{
-			Valid: true,
-			Value: 8,
-		},
-		MovementCounter: rawv2.MovementCounter{
-			Valid: true,
-			Value: 20,
-		},
-		SequenceNumber: rawv2.SequenceNumber{
-			Valid: true,
-			Value: 20000,
-		},
-	}
+	dnow := testhelpers.Packet1(mac, now)
+	dpast := testhelpers.Packet2(mac, past)
 	s.Update(dnow)
 	s.Update(dpast)
 	temp := s.Temperatures()
