@@ -5,14 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"sync"
 
 	"github.com/susji/ruuvi/data/rawv2"
-	"github.com/susji/ruuvimetrics/internal/help"
+	"github.com/susji/ruuvimetrics/internal/server"
 	"github.com/susji/ruuvimetrics/internal/state"
 )
 
@@ -24,36 +23,6 @@ var (
 	METRICFMT = "ruuvi_%s"
 )
 
-func dump[T comparable](w http.ResponseWriter, samples map[rawv2.MAC]state.Pair[T], kind, help string) {
-	metric := fmt.Sprintf(METRICFMT, kind)
-	fmt.Fprintf(w, "# HELP %s %s\n", metric, help)
-	fmt.Fprintf(w, "# TYPE %s gauge\n", metric)
-	for mac, v := range samples {
-		fmt.Fprintf(w,
-			"%s{mac=\"%s\"} %v %d\n",
-			metric, mac.String(), v.Value, v.Timestamp.UnixMilli())
-	}
-}
-
-func metrics(w http.ResponseWriter, r *http.Request) {
-	if VERBOSE {
-		log.Println(ENDPOINT)
-	}
-	// If performance ever becomes an issue, we could cache the metrics for
-	// a configurable amount of time.
-	w.Header().Add("content-type", CT)
-	dump(w, STATE.Temperatures(), "temperature", help.TEMP)
-	dump(w, STATE.Voltages(), "voltage", help.VOLT)
-	dump(w, STATE.Humidities(), "humidity", help.HUM)
-	dump(w, STATE.Pressures(), "pressure", help.PRES)
-	dump(w, STATE.AccelerationXs(), "acceleration_x", help.ACCEL)
-	dump(w, STATE.AccelerationYs(), "acceleration_y", help.ACCEL)
-	dump(w, STATE.AccelerationZs(), "acceleration_z", help.ACCEL)
-	dump(w, STATE.TransmitPowers(), "transmit_power", help.TX)
-	dump(w, STATE.MovementCounters(), "movement_counter", help.MOV)
-	dump(w, STATE.SequenceNumbers(), "sequence_number", help.SEQ)
-}
-
 func main() {
 	var l string
 	flag.StringVar(&l, "listen", "localhost:9900", "Listen address")
@@ -63,7 +32,12 @@ func main() {
 	flag.BoolVar(&VERBOSE, "verbose", false, "Verbose output")
 	flag.Parse()
 	log.Println("starting to listen at", l, "and verbosity is", VERBOSE)
-	http.HandleFunc(ENDPOINT, metrics)
+	http.HandleFunc(ENDPOINT, server.GenerateMetricsHandler(STATE, server.MetricsOptions{
+		ContentType: CT,
+		Endpoint:    ENDPOINT,
+		MetricFmt:   METRICFMT,
+		Verbose:     VERBOSE,
+	}))
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
 	s := &http.Server{Addr: l}
