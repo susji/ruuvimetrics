@@ -58,6 +58,7 @@ func main() {
 	flag.StringVar(&l, "listen", "localhost:9900", "Listen address")
 	flag.StringVar(&CT, "content-type", CT, "Content-Type header in responses")
 	flag.StringVar(&ENDPOINT, "endpoint", ENDPOINT, "HTTP endpoint for metrics")
+	flag.StringVar(&METRICFMT, "metric-format", METRICFMT, "Format string for metric name generation")
 	flag.BoolVar(&VERBOSE, "verbose", false, "Verbose output")
 	flag.Parse()
 	log.Println("starting to listen at", l, "and verbosity is", VERBOSE)
