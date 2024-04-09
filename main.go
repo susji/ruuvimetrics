@@ -16,15 +16,17 @@ import (
 )
 
 var (
-	STATE   = state.New()
-	VERBOSE = false
+	STATE    = state.New()
+	VERBOSE  = false
+	CT       = "text/plain; version=0.0.4"
+	ENDPOINT = "/metrics"
 )
 
 func metrics(w http.ResponseWriter, r *http.Request) {
 	if VERBOSE {
-		log.Println("/metrics")
+		log.Println(ENDPOINT)
 	}
-	w.Header().Add("content-type", "text/plain; version=0.0.4")
+	w.Header().Add("content-type", CT)
 	fmt.Fprintln(w, "# HELP ruuvi_temperature", HELP_TEMP)
 	fmt.Fprintln(w, "# TYPE ruuvi_temperature gauge")
 	for mac, v := range STATE.Temperatures() {
@@ -107,10 +109,12 @@ func metrics(w http.ResponseWriter, r *http.Request) {
 func main() {
 	var l string
 	flag.StringVar(&l, "listen", "localhost:9900", "Listen address")
+	flag.StringVar(&CT, "content-type", CT, "Content-Type header in responses")
+	flag.StringVar(&ENDPOINT, "endpoint", ENDPOINT, "HTTP endpoint for metrics")
 	flag.BoolVar(&VERBOSE, "verbose", false, "Verbose output")
 	flag.Parse()
 	log.Println("starting to listen at", l, "and verbosity is", VERBOSE)
-	http.HandleFunc("/metrics", metrics)
+	http.HandleFunc(ENDPOINT, metrics)
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
 	s := &http.Server{Addr: l}
