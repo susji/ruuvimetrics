@@ -15,10 +15,6 @@ type Pair[T comparable] struct {
 	Value     T
 }
 
-func (p Pair[T]) Equal(p2 Pair[T]) bool {
-	return p.Value == p2.Value && p.Timestamp.Equal(p2.Timestamp)
-}
-
 type Floats map[rawv2.MAC]Pair[float32]
 type Uint32s map[rawv2.MAC]Pair[uint32]
 type Int16s map[rawv2.MAC]Pair[int16]
