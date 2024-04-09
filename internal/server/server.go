@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/susji/ruuvi/data/rawv2"
-	"github.com/susji/ruuvimetrics/internal/help"
+	"github.com/susji/ruuvimetrics/internal/config"
 	"github.com/susji/ruuvimetrics/internal/state"
 )
 
@@ -36,15 +36,15 @@ func GenerateMetricsHandler(state *state.State, mo MetricsOptions) http.HandlerF
 		// If performance ever becomes an issue, we could cache the metrics for
 		// a configurable amount of time.
 		w.Header().Add("content-type", mo.ContentType)
-		dump(w, state.Temperatures(), mo.MetricFmt, "temperature", help.TEMP)
-		dump(w, state.Voltages(), mo.MetricFmt, "voltage", help.VOLT)
-		dump(w, state.Humidities(), mo.MetricFmt, "humidity", help.HUM)
-		dump(w, state.Pressures(), mo.MetricFmt, "pressure", help.PRES)
-		dump(w, state.AccelerationXs(), mo.MetricFmt, "acceleration_x", help.ACCEL)
-		dump(w, state.AccelerationYs(), mo.MetricFmt, "acceleration_y", help.ACCEL)
-		dump(w, state.AccelerationZs(), mo.MetricFmt, "acceleration_z", help.ACCEL)
-		dump(w, state.TransmitPowers(), mo.MetricFmt, "transmit_power", help.TX)
-		dump(w, state.MovementCounters(), mo.MetricFmt, "movement_counter", help.MOV)
-		dump(w, state.SequenceNumbers(), mo.MetricFmt, "sequence_number", help.SEQ)
+		dump(w, state.Temperatures(), mo.MetricFmt, "temperature", config.TEMP)
+		dump(w, state.Voltages(), mo.MetricFmt, "voltage", config.VOLT)
+		dump(w, state.Humidities(), mo.MetricFmt, "humidity", config.HUM)
+		dump(w, state.Pressures(), mo.MetricFmt, "pressure", config.PRES)
+		dump(w, state.AccelerationXs(), mo.MetricFmt, "acceleration_x", config.ACCEL)
+		dump(w, state.AccelerationYs(), mo.MetricFmt, "acceleration_y", config.ACCEL)
+		dump(w, state.AccelerationZs(), mo.MetricFmt, "acceleration_z", config.ACCEL)
+		dump(w, state.TransmitPowers(), mo.MetricFmt, "transmit_power", config.TX)
+		dump(w, state.MovementCounters(), mo.MetricFmt, "movement_counter", config.MOV)
+		dump(w, state.SequenceNumbers(), mo.MetricFmt, "sequence_number", config.SEQ)
 	}
 }

@@ -1,4 +1,4 @@
-package help
+package config
 
 var (
 	TEMP  = "Temperature in 0.005 degree increments"

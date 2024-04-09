@@ -11,32 +11,33 @@ import (
 	"sync"
 
 	"github.com/susji/ruuvi/data/rawv2"
+	"github.com/susji/ruuvimetrics/internal/config"
 	"github.com/susji/ruuvimetrics/internal/server"
 	"github.com/susji/ruuvimetrics/internal/state"
 )
 
 var (
-	STATE     = state.New()
-	VERBOSE   = false
-	CT        = "text/plain; version=0.0.4"
-	ENDPOINT  = "/metrics"
-	METRICFMT = "ruuvi_%s"
+	STATE = state.New()
 )
 
 func main() {
 	var l string
+	ct := config.CT
+	ep := config.ENDPOINT
+	mf := config.METRICFMT
+	v := config.VERBOSE
 	flag.StringVar(&l, "listen", "localhost:9900", "Listen address")
-	flag.StringVar(&CT, "content-type", CT, "Content-Type header in responses")
-	flag.StringVar(&ENDPOINT, "endpoint", ENDPOINT, "HTTP endpoint for metrics")
-	flag.StringVar(&METRICFMT, "metric-format", METRICFMT, "Format string for metric name generation")
-	flag.BoolVar(&VERBOSE, "verbose", false, "Verbose output")
+	flag.StringVar(&ct, "content-type", ct, "Content-Type header in responses")
+	flag.StringVar(&ep, "endpoint", ep, "HTTP endpoint for metrics")
+	flag.StringVar(&mf, "metric-format", mf, "Format string for metric name generation")
+	flag.BoolVar(&v, "verbose", v, "Verbose output")
 	flag.Parse()
-	log.Println("starting to listen at", l, "and verbosity is", VERBOSE)
-	http.HandleFunc(ENDPOINT, server.GenerateMetricsHandler(STATE, server.MetricsOptions{
-		ContentType: CT,
-		Endpoint:    ENDPOINT,
-		MetricFmt:   METRICFMT,
-		Verbose:     VERBOSE,
+	log.Println("starting to listen at", l, "and verbosity is", v)
+	http.HandleFunc(config.ENDPOINT, server.GenerateMetricsHandler(STATE, server.MetricsOptions{
+		ContentType: ct,
+		Endpoint:    ep,
+		MetricFmt:   mf,
+		Verbose:     v,
 	}))
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
@@ -63,7 +64,7 @@ func main() {
 				log.Println("cannot unmarshal Ruuvi data:", err)
 				continue
 			}
-			if VERBOSE {
+			if v {
 				log.Printf("update[%s]\n", d.MAC)
 			}
 			STATE.Update(&d)
