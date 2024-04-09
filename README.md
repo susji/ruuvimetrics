@@ -12,6 +12,10 @@ reads sensor values from standard input.
 
 # Usage
 
+`ruuvimetrics` has some command-line arguments. To see them, invoke
+
+    $ ruuvimetrics -h
+
 For local BLE scans, invoke
 
     $ ruuviscan | ruuvimetrics
