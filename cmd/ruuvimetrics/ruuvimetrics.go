@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/susji/ruuvi/data/rawv2"
+	"github.com/susji/ruuvimetrics/internal/help"
 	"github.com/susji/ruuvimetrics/internal/state"
 )
 
@@ -41,16 +42,16 @@ func metrics(w http.ResponseWriter, r *http.Request) {
 	// If performance ever becomes an issue, we could cache the metrics for
 	// a configurable amount of time.
 	w.Header().Add("content-type", CT)
-	dump(w, STATE.Temperatures(), "temperature", HELP_TEMP)
-	dump(w, STATE.Voltages(), "voltage", HELP_VOLT)
-	dump(w, STATE.Humidities(), "humidity", HELP_HUM)
-	dump(w, STATE.Pressures(), "pressure", HELP_PRES)
-	dump(w, STATE.AccelerationXs(), "acceleration_x", HELP_ACCEL)
-	dump(w, STATE.AccelerationYs(), "acceleration_y", HELP_ACCEL)
-	dump(w, STATE.AccelerationZs(), "acceleration_z", HELP_ACCEL)
-	dump(w, STATE.TransmitPowers(), "transmit_power", HELP_TX)
-	dump(w, STATE.MovementCounters(), "movement_counter", HELP_MOV)
-	dump(w, STATE.SequenceNumbers(), "sequence_number", HELP_SEQ)
+	dump(w, STATE.Temperatures(), "temperature", help.TEMP)
+	dump(w, STATE.Voltages(), "voltage", help.VOLT)
+	dump(w, STATE.Humidities(), "humidity", help.HUM)
+	dump(w, STATE.Pressures(), "pressure", help.PRES)
+	dump(w, STATE.AccelerationXs(), "acceleration_x", help.ACCEL)
+	dump(w, STATE.AccelerationYs(), "acceleration_y", help.ACCEL)
+	dump(w, STATE.AccelerationZs(), "acceleration_z", help.ACCEL)
+	dump(w, STATE.TransmitPowers(), "transmit_power", help.TX)
+	dump(w, STATE.MovementCounters(), "movement_counter", help.MOV)
+	dump(w, STATE.SequenceNumbers(), "sequence_number", help.SEQ)
 }
 
 func main() {
