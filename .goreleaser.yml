@@ -1,6 +1,6 @@
 builds:
 - id: ruuvimetrics
-  binary: ruuvimetrics
+  main: ./cmd/ruuvimetrics
   env:
     - CGO_ENABLED=0
   goos:
