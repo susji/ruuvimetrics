@@ -16,94 +16,41 @@ import (
 )
 
 var (
-	STATE    = state.New()
-	VERBOSE  = false
-	CT       = "text/plain; version=0.0.4"
-	ENDPOINT = "/metrics"
+	STATE     = state.New()
+	VERBOSE   = false
+	CT        = "text/plain; version=0.0.4"
+	ENDPOINT  = "/metrics"
+	METRICFMT = "ruuvi_%s"
 )
+
+func dump[T comparable](w http.ResponseWriter, samples map[rawv2.MAC]state.Pair[T], kind, help string) {
+	metric := fmt.Sprintf(METRICFMT, kind)
+	fmt.Fprintf(w, "# HELP %s %s\n", metric, help)
+	fmt.Fprintf(w, "# TYPE %s gauge\n", metric)
+	for mac, v := range samples {
+		fmt.Fprintf(w,
+			"%s{mac=\"%s\"} %v %d\n",
+			metric, mac.String(), v.Value, v.Timestamp.UnixMilli())
+	}
+}
 
 func metrics(w http.ResponseWriter, r *http.Request) {
 	if VERBOSE {
 		log.Println(ENDPOINT)
 	}
+	// If performance ever becomes an issue, we could cache the metrics for
+	// a configurable amount of time.
 	w.Header().Add("content-type", CT)
-	fmt.Fprintln(w, "# HELP ruuvi_temperature", HELP_TEMP)
-	fmt.Fprintln(w, "# TYPE ruuvi_temperature gauge")
-	for mac, v := range STATE.Temperatures() {
-		fmt.Fprintf(w,
-			"ruuvi_temperature{mac=\"%s\"} %f %d\n",
-			mac.String(), v.Value, v.Timestamp.UnixMilli())
-	}
-	fmt.Fprintln(w, "# HELP ruuvi_voltage", HELP_VOLT)
-	fmt.Fprintln(w, "# TYPE ruuvi_voltage gauge")
-	for mac, v := range STATE.Voltages() {
-		fmt.Fprintf(w,
-			"ruuvi_voltage{mac=\"%s\"} %f %d\n",
-			mac.String(), v.Value, v.Timestamp.UnixMilli())
-	}
-	fmt.Fprintln(w, "# HELP ruuvi_humidity", HELP_HUM)
-	fmt.Fprintln(w, "# TYPE ruuvi_humidity gauge")
-	for mac, v := range STATE.Humidities() {
-		fmt.Fprintf(w,
-			"ruuvi_humidity{mac=\"%s\"} %f %d\n",
-			mac.String(), v.Value, v.Timestamp.UnixMilli())
-	}
-	fmt.Fprintln(w, "# HELP ruuvi_pressure", HELP_PRES)
-	fmt.Fprintln(w, "# TYPE ruuvi_pressure gauge")
-	for mac, v := range STATE.Pressures() {
-		fmt.Fprintf(w,
-			"ruuvi_pressure{mac=\"%s\"} %d %d\n",
-			mac.String(), v.Value, v.Timestamp.UnixMilli())
-	}
-	fmt.Fprintln(w, "# HELP ruuvi_acceleration_x", HELP_ACCEL)
-	fmt.Fprintln(w, "# TYPE ruuvi_acceleration_x gauge")
-	for mac, v := range STATE.AccelerationXs() {
-		fmt.Fprintf(w,
-			"ruuvi_acceleration_x{mac=\"%s\"} %d %d\n",
-			mac.String(), v.Value, v.Timestamp.UnixMilli())
-	}
-	fmt.Fprintln(w, "# HELP ruuvi_acceleration_y", HELP_ACCEL)
-	fmt.Fprintln(w, "# TYPE ruuvi_acceleration_y gauge")
-	for mac, v := range STATE.AccelerationYs() {
-		fmt.Fprintf(w,
-			"ruuvi_acceleration_y{mac=\"%s\"} %d %d\n",
-			mac.String(), v.Value, v.Timestamp.UnixMilli())
-	}
-	fmt.Fprintln(w, "# HELP ruuvi_acceleration_z", HELP_ACCEL)
-	fmt.Fprintln(w, "# TYPE ruuvi_acceleration_z gauge")
-	for mac, v := range STATE.AccelerationZs() {
-		fmt.Fprintf(w,
-			"ruuvi_acceleration_z{mac=\"%s\"} %d %d\n",
-			mac.String(), v.Value, v.Timestamp.UnixMilli())
-	}
-	fmt.Fprintln(w, "# HELP ruuvi_acceleration_z", HELP_ACCEL)
-	fmt.Fprintln(w, "# TYPE ruuvi_acceleration_z gauge")
-	for mac, v := range STATE.AccelerationZs() {
-		fmt.Fprintf(w,
-			"ruuvi_acceleration_z{mac=\"%s\"} %d %d\n",
-			mac.String(), v.Value, v.Timestamp.UnixMilli())
-	}
-	fmt.Fprintln(w, "# HELP ruuvi_transmit_power", HELP_TX)
-	fmt.Fprintln(w, "# TYPE ruuvi_transmit_power gauge")
-	for mac, v := range STATE.TransmitPowers() {
-		fmt.Fprintf(w,
-			"ruuvi_transmit_power{mac=\"%s\"} %d %d\n",
-			mac.String(), v.Value, v.Timestamp.UnixMilli())
-	}
-	fmt.Fprintln(w, "# HELP ruuvi_movement_counter", HELP_MOV)
-	fmt.Fprintln(w, "# TYPE ruuvi_movement_counter gauge")
-	for mac, v := range STATE.MovementCounters() {
-		fmt.Fprintf(w,
-			"ruuvi_movement_counter{mac=\"%s\"} %d %d\n",
-			mac.String(), v.Value, v.Timestamp.UnixMilli())
-	}
-	fmt.Fprintln(w, "# HELP ruuvi_sequence_number", HELP_SEQ)
-	fmt.Fprintln(w, "# TYPE ruuvi_sequence_number gauge")
-	for mac, v := range STATE.SequenceNumbers() {
-		fmt.Fprintf(w,
-			"ruuvi_sequence_number{mac=\"%s\"} %d %d\n",
-			mac.String(), v.Value, v.Timestamp.UnixMilli())
-	}
+	dump(w, STATE.Temperatures(), "temperature", HELP_TEMP)
+	dump(w, STATE.Voltages(), "voltage", HELP_VOLT)
+	dump(w, STATE.Humidities(), "humidity", HELP_HUM)
+	dump(w, STATE.Pressures(), "pressure", HELP_PRES)
+	dump(w, STATE.AccelerationXs(), "acceleration_x", HELP_ACCEL)
+	dump(w, STATE.AccelerationYs(), "acceleration_y", HELP_ACCEL)
+	dump(w, STATE.AccelerationZs(), "acceleration_z", HELP_ACCEL)
+	dump(w, STATE.TransmitPowers(), "transmit_power", HELP_TX)
+	dump(w, STATE.MovementCounters(), "movement_counter", HELP_MOV)
+	dump(w, STATE.SequenceNumbers(), "sequence_number", HELP_SEQ)
 }
 
 func main() {
