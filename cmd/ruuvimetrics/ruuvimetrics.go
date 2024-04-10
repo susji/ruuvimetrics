@@ -41,13 +41,15 @@ func main() {
 	s := &http.Server{Addr: l}
 	go func() {
 		defer wg.Done()
+		rc := 0
 		err := s.ListenAndServe()
 		if errors.Is(err, http.ErrServerClosed) {
-			log.Println("http server shutting down")
+			log.Println("HTTP server closed - reader probably shut down")
 		} else if err != nil {
-			log.Println("http server errored:", err)
-			os.Exit(1)
+			log.Println("HTTP server errored:", err)
+			rc = 1
 		}
+		os.Exit(rc)
 	}()
 	go func() {
 		defer wg.Done()
