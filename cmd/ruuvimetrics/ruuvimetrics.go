@@ -16,12 +16,9 @@ import (
 	"github.com/susji/ruuvimetrics/internal/state"
 )
 
-var (
-	STATE = state.New()
-)
-
 func main() {
-	var l string
+	st := state.New()
+	l := ""
 	ct := config.CT
 	ep := config.ENDPOINT
 	mf := config.METRICFMT
@@ -33,7 +30,7 @@ func main() {
 	flag.BoolVar(&v, "verbose", v, "Verbose output")
 	flag.Parse()
 	log.Println("starting to listen at", l, "and verbosity is", v)
-	http.HandleFunc(config.ENDPOINT, server.GenerateMetricsHandler(STATE, server.MetricsOptions{
+	http.HandleFunc(config.ENDPOINT, server.GenerateMetricsHandler(st, server.MetricsOptions{
 		ContentType: ct,
 		Endpoint:    ep,
 		MetricFmt:   mf,
@@ -67,7 +64,7 @@ func main() {
 			if v {
 				log.Printf("update[%s]\n", d.MAC)
 			}
-			STATE.Update(&d)
+			st.Update(&d)
 		}
 		if err := s.Err(); err != nil {
 			log.Println("reading input failed:", err)
