@@ -10,6 +10,14 @@ or with raw BLE Advertisement packets (ruuviparse). The idea is that those
 programs generate sensor values as JSON to standard output and this program
 reads sensor values from standard input.
 
+# Installing
+
+Builds for many platforms can be found
+[here](https://github.com/susji/ruuvimetrics/releases). You may also use the Go
+toolchain:
+
+    $ go install github.com/susji/ruuvimetrics/cmd/ruuvimetrics@latest
+
 # Usage
 
 `ruuvimetrics` has some command-line arguments. To see them, invoke
