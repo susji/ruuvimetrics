@@ -86,7 +86,6 @@ func TestBasicMetrics(t *testing.T) {
 		ContentType: config.CT,
 		Endpoint:    config.ENDPOINT,
 		MetricFmt:   config.METRICFMT,
-		Verbose:     config.VERBOSE,
 	})
 	handler.ServeHTTP(rec, req)
 	res := rec.Result()

@@ -22,20 +22,26 @@ func main() {
 	ct := config.CT
 	ep := config.ENDPOINT
 	mf := config.METRICFMT
-	v := config.VERBOSE
+	lr := config.LOGREQUESTS
+	li := config.LOGINPUT
+	logger := log.Default()
 	flag.StringVar(&l, "listen", "localhost:9900", "Listen address")
 	flag.StringVar(&ct, "content-type", ct, "Content-Type header in responses")
 	flag.StringVar(&ep, "endpoint", ep, "HTTP endpoint for metrics")
 	flag.StringVar(&mf, "metric-format", mf, "Format string for metric name generation")
-	flag.BoolVar(&v, "verbose", v, "Verbose output")
+	flag.BoolVar(&lr, "log-requests", lr, "Log HTTP requests")
+	flag.BoolVar(&li, "log-input", li, "Log successfully parsed input packets")
 	flag.Parse()
-	log.Println("starting to listen at", l, "and verbosity is", v)
-	http.HandleFunc(config.ENDPOINT, server.GenerateMetricsHandler(st, server.MetricsOptions{
+	logger.Println("starting to listen at", l)
+	h := server.GenerateMetricsHandler(st, server.MetricsOptions{
 		ContentType: ct,
 		Endpoint:    ep,
 		MetricFmt:   mf,
-		Verbose:     v,
-	}))
+	})
+	if lr {
+		h = server.GenerateRequestLogger(logger, h)
+	}
+	http.HandleFunc(config.ENDPOINT, h)
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
 	s := &http.Server{Addr: l}
@@ -44,9 +50,9 @@ func main() {
 		rc := 0
 		err := s.ListenAndServe()
 		if errors.Is(err, http.ErrServerClosed) {
-			log.Println("HTTP server closed - reader probably shut down")
+			logger.Println("HTTP server closed - reader probably shut down")
 		} else if err != nil {
-			log.Println("HTTP server errored:", err)
+			logger.Println("HTTP server errored:", err)
 			rc = 1
 		}
 		os.Exit(rc)
@@ -55,21 +61,21 @@ func main() {
 		defer wg.Done()
 		defer s.Close()
 		s := bufio.NewScanner(os.Stdin)
-		log.Println("reading standard input")
+		logger.Println("reading standard input")
 		for s.Scan() {
 			d := rawv2.RuuviRawV2{}
 			err := json.Unmarshal(s.Bytes(), &d)
 			if err != nil {
-				log.Println("cannot unmarshal Ruuvi data:", err)
+				logger.Println("cannot unmarshal Ruuvi data:", err)
 				continue
 			}
-			if v {
-				log.Printf("update[%s]\n", d.MAC)
+			if li {
+				logger.Printf("update[%s]\n", d.MAC)
 			}
 			st.Update(&d)
 		}
 		if err := s.Err(); err != nil {
-			log.Println("reading input failed:", err)
+			logger.Println("reading input failed:", err)
 		}
 	}()
 	wg.Wait()

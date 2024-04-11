@@ -25,14 +25,23 @@ type MetricsOptions struct {
 	ContentType string
 	Endpoint    string
 	MetricFmt   string
-	Verbose     bool
+}
+
+func GenerateRequestLogger(l *log.Logger, h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// We assume that the logger will worry about timestamping.
+		l.Printf(
+			"%s %q %s %s",
+			r.RemoteAddr,
+			r.Header.Get("x-forwarded-for"),
+			r.Method,
+			r.URL)
+		h(w, r)
+	}
 }
 
 func GenerateMetricsHandler(state *state.State, mo MetricsOptions) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if mo.Verbose {
-			log.Println(mo.Endpoint)
-		}
 		// If performance ever becomes an issue, we could cache the metrics for
 		// a configurable amount of time.
 		w.Header().Add("content-type", mo.ContentType)
